@@ -12,16 +12,16 @@ def cart_pend_dynamics(state, t, m, M, L, d, u):
     den = m * (L**2) * (M + m*(1 - cx**2)); 
     xddot = ((-(m**2)*(L**2)*g*cx*sx) + (m*(L**2)*(m*L*(w**2)*sx -  d*v)) + (m*(L**2)*u))/den
     thetaddot = ((((m + M)*m*g*L*sx)) - (m*L*cx*(m*L*(w**2)*sx - d*v)) + (m*L*cx*u))/den;
+        
     statedot = [v, w, xddot, thetaddot];
     return statedot   
 
-def plot_epsiode(episode, tspan):
-    
-    x = epsiode[:, 0]
-    theta = epsiode[:, 1]
-    v = epsiode[:, 2]
-    w = epsiode[:, 3]
-    u = epsiode[:, 4]
+def plot_episode(episode, tspan):
+    print(episode)
+    x = episode[:, 0]
+    theta = episode[:, 1]
+    v = episode[:, 2]
+    w = episode[:, 3]
     
     plt.subplot(2, 2, 1)
     plt.plot(tspan, x)
@@ -39,7 +39,7 @@ def plot_epsiode(episode, tspan):
     plt.ylabel(" Theta (rad)")
     
     plt.subplot(2, 2, 4)
-    plt.plot(tspan, theta_dot)
+    plt.plot(tspan, w)
     plt.xlabel(" Time (sec)")
     plt.ylabel(" Angular Velocity (rad/s)")
     plt.show()
@@ -66,7 +66,7 @@ class Environment:
         self.step_counter = 0;
         self.episode_duration = EL;
         self.ST = ST
-        self.dt = 0.05;
+        self.dt = 0.01;
         self.params = params;
     
     def action_sample(self):
@@ -91,17 +91,8 @@ class Environment:
         angle_tol = (pi/180)*12
         
         # if pole is upright
-        if np.abs(mod(sol[-1, 1], 2*pi) - pi) <= angle_tol:
-            reward = 1;
-            # if pole is previously upright and currently upright then increment
-            #if np.abs(mod(self.state[1], 2*pi) - pi) <= angle_tol and np.abs(mod(next_state[1], 2*pi) - pi) < angle_tol: 
-            #    self.step_invert = self.step_invert + 1
-                
-            #else:
-                # Otherwise reset the inverted step counter
-            #    self.step_invert = 0;
-        else:
-            reward = 0;
+
+            
             
         if self.step_counter == self.episode_duration - 1:
             done = True
@@ -111,7 +102,9 @@ class Environment:
             #print('Flag 3') 
         else:
             done = False
-        
+        reward = 1;
+        if not np.abs(mod(sol[-1, 1], 2*pi) - pi) <= angle_tol:
+            done = True;
         self.step_counter = self.step_counter + 1;
         return next_state, reward, done 
     
